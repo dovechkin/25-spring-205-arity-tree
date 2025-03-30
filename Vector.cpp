@@ -102,7 +102,7 @@ template <typename T> class Vector
             for (size_t i = 0; i < size; ++i) {
                 new_data[i] = data[i];
                 if (i == index) {
-                    new_data[i] == value;
+                    new_data[i] = value;
                 }
                 if (i > index) {
                     new_data[i] = data[i - 1];
