@@ -96,15 +96,29 @@ template <typename T> class Vector
     {
         if (index > size) {
             throw std::out_of_range("Index out of range");
+        } else if (size >= capacity) {
+            // resize(capacity == 0 ? 1 : capacity * 2);
+            T *new_data = new T[2 * capacity];
+            for (size_t i = 0; i < size; ++i) {
+                new_data[i] = data[i];
+                if (i == index) {
+                    new_data[i] == value;
+                }
+                if (i > index) {
+                    new_data[i] = data[i - 1];
+                }
+            }
+            delete[] data;
+            data = new_data;
+            ++size;
+            capacity = 2 * capacity;
+        } else {
+            for (size_t i = size; i > index; --i) {
+                data[i] = data[i - 1];
+            }
+            data[index] = value;
+            ++size;
         }
-        if (size >= capacity) {
-            resize(capacity == 0 ? 1 : capacity * 2);
-        }
-        for (size_t i = size; i > index; --i) {
-            data[i] = data[i - 1];
-        }
-        data[index] = value;
-        ++size;
     }
 
     // Удаление элемента с конца
