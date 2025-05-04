@@ -4,11 +4,10 @@
 template <typename T> class Vector
 {
   private:
-    T *data; // Указатель на массив данных
-    size_t capacity; // Вместимость массива
-    size_t size; // Текущий размер массива
+    T *data;
+    size_t capacity;
+    size_t size;
 
-    // Увеличение вместимости массива
     void resize(size_t new_capacity)
     {
         T *new_data = new T[new_capacity];
@@ -21,17 +20,14 @@ template <typename T> class Vector
     }
 
   public:
-    // Конструктор по умолчанию
     Vector() : data(nullptr), capacity(0), size(0) {}
 
-    // Конструктор с начальной вместимостью
     explicit Vector(size_t initial_capacity)
         : capacity(initial_capacity), size(0)
     {
         data = new T[capacity];
     }
 
-    // Конструктор копирования
     Vector(const Vector &other) : capacity(other.capacity), size(other.size)
     {
         data = new T[capacity];
@@ -40,7 +36,6 @@ template <typename T> class Vector
         }
     }
 
-    // Конструктор перемещения
     Vector(Vector &&other) noexcept
         : data(other.data), capacity(other.capacity), size(other.size)
     {
@@ -49,10 +44,8 @@ template <typename T> class Vector
         other.size = 0;
     }
 
-    // Деструктор
     ~Vector() { delete[] data; }
 
-    // Оператор присваивания копированием
     Vector &operator=(const Vector &other)
     {
         if (this != &other) {
@@ -67,7 +60,6 @@ template <typename T> class Vector
         return *this;
     }
 
-    // Оператор присваивания перемещением
     Vector &operator=(Vector &&other) noexcept
     {
         if (this != &other) {
@@ -82,7 +74,6 @@ template <typename T> class Vector
         return *this;
     }
 
-    // Добавление элемента в конец
     void push_back(const T &value)
     {
         if (size >= capacity) {
@@ -91,13 +82,11 @@ template <typename T> class Vector
         data[size++] = value;
     }
 
-    // Добавление элемента по индексу
     void insert(size_t index, const T &value)
     {
         if (index > size) {
             throw std::out_of_range("Index out of range");
         } else if (size >= capacity) {
-            // resize(capacity == 0 ? 1 : capacity * 2);
             T *new_data = new T[2 * capacity];
             for (size_t i = 0; i < size; ++i) {
                 new_data[i] = data[i];
@@ -121,7 +110,6 @@ template <typename T> class Vector
         }
     }
 
-    // Удаление элемента с конца
     void pop_back()
     {
         if (size == 0) {
@@ -130,7 +118,6 @@ template <typename T> class Vector
         --size;
     }
 
-    // Удаление элемента по индексу
     void erase(size_t index)
     {
         if (index >= size) {
@@ -142,7 +129,6 @@ template <typename T> class Vector
         --size;
     }
 
-    // Доступ к элементу по индексу
     T &operator[](size_t index)
     {
         if (index >= size) {
@@ -151,7 +137,6 @@ template <typename T> class Vector
         return data[index];
     }
 
-    // Константный доступ к элементу по индексу
     const T &operator[](size_t index) const
     {
         if (index >= size) {
@@ -160,10 +145,8 @@ template <typename T> class Vector
         return data[index];
     }
 
-    // Получение текущего размера
     size_t get_size() const { return size; }
 
-    // Получение текущей вместимости
     size_t get_capacity() const { return capacity; }
 
     class Iterator
@@ -202,10 +185,7 @@ template <typename T> class Vector
         explicit ConstIterator(const T *p) : ptr(p) {}
         const T &operator*() const { return *ptr; }
 
-        const T *operator->() const
-        {
-            return ptr;
-        } // Исправлено: возвращаем указатель
+        const T *operator->() const { return ptr; }
 
         ConstIterator &operator++()
         {
@@ -217,10 +197,9 @@ template <typename T> class Vector
         {
             ConstIterator tmp = *this;
             ++ptr;
-            return tmp; // Исправлено: возвращаем временный объект
+            return tmp;
         }
 
-        // Добавляем const и правильные параметры
         bool operator==(const ConstIterator &other) const
         {
             return ptr == other.ptr;
@@ -228,7 +207,7 @@ template <typename T> class Vector
         bool operator!=(const ConstIterator &other) const
         {
             return ptr != other.ptr;
-        } // Исправлено на !=
+        }
     };
     Iterator begin() { return Iterator(data); }
     Iterator end() { return Iterator(data + size); }
