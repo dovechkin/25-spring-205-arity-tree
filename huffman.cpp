@@ -214,8 +214,7 @@ int main()
 {
     AdaptiveHuffmanVitter encoder;
 
-    string input =
-        "Это пример строки для сжатия, которая занимает много места!";
+    string input = "absuuosuggugeghhsjgffdhhhhhsfccdvwgfdfgd";
     cout << "Encoding '" << input << "':" << endl;
 
     string encoded;
