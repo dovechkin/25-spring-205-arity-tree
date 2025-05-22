@@ -304,26 +304,23 @@ void write_compressed_data(istream &in, ostream &out, uint32_t &crc, uint32_t &i
 
 void encode(istream &in, ostream &out, Options options)
 {
-    // 1. Заголовок GZip
-    out.put(0x1F); // ID1
-    out.put(0x8B); // ID2
-    out.put(0x08); // CM = DEFLATE
+    out.put(0x1F);
+    out.put(0x8B);
+    out.put(0x08);
 
     uint8_t flags;
     if (options.store_filename)
-        flags |= (1 << 3); // сохранить имя файла
+        flags |= (1 << 3);
 
-    out.put(flags); // FLG
+    out.put(flags);
 
-    // MTIME (время модификации, 0 = неизвестно)
     uint32_t mtime = get_current_unix_time();
     for (int i = 0; i < 4; i++)
         out.put((mtime >> 8 * i) & 0xFF);
 
-    out.put(0x00); // XFL (максимальное сжатие)
-    out.put(0xFF); // OS
+    out.put(0x00);
+    out.put(0xFF);
 
-    // сохраняем имя файла
     if (options.store_filename)
     {
         for (auto ch : options.file_name)
@@ -334,14 +331,11 @@ void encode(istream &in, ostream &out, Options options)
     uint32_t crc;
     uint32_t isize;
 
-    // 2. Добавляем сжатые данные и считаем контрольные суммы
     write_compressed_data(in, out, crc, isize);
 
-    // 3. CRC-32 исходных данных (little-endian)
     for (int i = 0; i < 4; i++)
         out.put((crc >> 8 * i) & 0xFF);
 
-    // 4. ISIZE (размер исходных данных, little-endian)
     for (int i = 0; i < 4; i++)
         out.put((isize >> 8 * i) & 0xFF);
 }

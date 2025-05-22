@@ -22,7 +22,7 @@ struct Match
     Match(size_t d, size_t l, char ch) : distance(d), length(l), next_char(ch) {}
 };
 
-const string BTYPE_FIXED = "10"; // reverse order for packing
+const string BTYPE_FIXED = "10";
 const string END_OF_BLOCK = "0000000";
 constexpr uint32_t BUF_SIZE = 65536;
 constexpr uint8_t BYTE_SIZE = 8;
@@ -116,7 +116,6 @@ string unpack(const string &src)
     return unpacked;
 }
 
-// FIXME: где-то тут ошибка чтения - выход за границы массива
 vector<Match> get_matches(const string &src)
 {
     vector<Match> matches;
@@ -135,32 +134,23 @@ vector<Match> get_matches(const string &src)
 
         while (src.substr(pos, 7) != END_OF_BLOCK)
         {
-            cout << "pos= " << pos << endl;
-
             if (len_table.find(src.substr(pos, 7)) != len_table.end())
             {
-                cout << src.substr(pos, 7) << endl;
                 Match match = get_match(src, pos, 7);
                 matches.push_back(match);
             }
             else if (lit_table.find(src.substr(pos, 8)) != lit_table.end())
             {
-                cout << src.substr(pos, 8) << endl;
-
                 matches.emplace_back(0, 1, lit_table[src.substr(pos, 8)]);
                 pos += 8;
             }
             else if (len_table.find(src.substr(pos, 8)) != len_table.end())
             {
-                cout << src.substr(pos, 8) << endl;
-
                 Match match = get_match(src, pos, 8);
                 matches.push_back(match);
             }
             else if (lit_table.find(src.substr(pos, 9)) != lit_table.end())
             {
-                cout << src.substr(pos, 9) << endl;
-
                 matches.emplace_back(0, 1, lit_table[src.substr(pos, 9)]);
                 pos += 9;
             }
@@ -206,39 +196,21 @@ void read_header(istream &in, string &filename)
     }
 }
 
-uint32_t calculate_crc32_simple(const char *data, size_t length)
-{
-    uint32_t crc = 0xFFFFFFFF;
-    const uint32_t polynomial = 0xEDB88320;
-
-    for (size_t i = 0; i < length; i++)
-    {
-        crc ^= data[i];
-        for (uint32_t j = 0; j < 8; j++)
-        {
-            crc = (crc >> 1) ^ ((crc & 1) ? polynomial : 0);
-        }
-    }
-
-    return ~crc;
-}
-
 void decode(istream &in, ostream &out)
 {
     fill_lit_codes();
 
     streampos start_pos = in.tellg();
-
     in.seekg(0, std::ios::end);
-
-    streampos bytes_to_read = in.tellg() - start_pos - 8;
+    streampos end_of_file = in.tellg();
+    size_t bytes_to_read = end_of_file - start_pos - 8;
     in.seekg(start_pos, std::ios::beg);
 
-    uint8_t byte;
+    char byte;
     string src;
     for (size_t i = 0; i < bytes_to_read; ++i)
     {
-        in >> byte;
+        in.read(&byte, 1);
         for (uint8_t j = 0; j < BYTE_SIZE; ++j)
             if (((byte >> j) & 1) == 1)
                 src.push_back('1');
@@ -249,8 +221,6 @@ void decode(istream &in, ostream &out)
     cout << src << '\n';
 
     vector<Match> matches = get_matches(src);
-
-    // cout << "!!" << endl;
 
     string result;
     for (auto [dist, len, ch] : matches)
@@ -276,8 +246,9 @@ void decode(istream &in, ostream &out)
     uint32_t input_isize = 0;
     for (uint8_t i = 0; i < 4; ++i)
     {
-        in >> byte;
-        input_isize |= (byte << i * 8);
+        char data;
+        in.read(&data, 1);
+        input_isize |= ((data & 0xFF) << i * 8);
     }
 
     uint32_t crc_table[256];
@@ -289,9 +260,9 @@ void decode(istream &in, ostream &out)
 
     crc ^= 0xFFFFFFFF;
 
-    uint32_t isize = result.size();
-
     cout << result << '\n';
+
+    uint32_t isize = result.size();
 
     assert(crc == input_crc);
     assert(isize == input_isize);
@@ -334,8 +305,6 @@ int main(int argc, char *argv[])
         cerr << "Не удалось открыть файл для записи!" << endl;
         return 1;
     }
-
-    cout << filename << '\n';
 
     decode(input_file, output_file);
 

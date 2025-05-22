@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void encode(istream& in, ostream& out)
+void encode(istream &in, ostream &out)
 {
     vector<pair<int64_t, char>> seq;
 
@@ -84,7 +84,7 @@ void encode(istream& in, ostream& out)
     }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     if (argc != 3)
     {
